@@ -4,11 +4,11 @@
 Complete, secure Nostr integration for Hermes Agent. Read events, draft posts, upload images to Blossom, publish with explicit TTY approval. NIP-94 compliant image metadata."
 
 ## Meta-Data
-version: 2.1.0
-author: "bronoman + SuperGrok + Hermes local (May 2026)"
-license: MIT
-github: https://github.com/bronoman/hermes-skills/tree/3507d9bc4b1538bee6ec62acaba2166fbd21d94a/social-media/nostr
-platforms: [linux]
+- version: 2.1.0
+- author: "bronoman + SuperGrok + Hermes local (May 2026)"
+- license: MIT
+- github: https://github.com/bronoman/hermes-skills/tree/3507d9bc4b1538bee6ec62acaba2166fbd21d94a/social-media/nostr
+- platforms: [linux]
 
 ## What This Skill Does
 
