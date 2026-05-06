@@ -1,142 +1,185 @@
 #!/usr/bin/env python3
 """
-Secure Telegram → Nostr Cross-Post with Image
-Skill Path: ~/.hermes/skills/social-media/nostr
+Image Upload & Draft Creation for Nostr (nostr skill v2.1)
+- Download/upload image to Blossom servers
+- Create unsigned draft with NIP-94 metadata
+- NO Telegram credentials access (optional feature removed)
+- Output: JSON draft ready for publish.py with NOSTR_APPROVE=1
 
-Supports:
-- Blossom (NIP-B7) primary upload (public & decentralized)
-- Picsur fallback (local testing)
+Usage:
+  python3 telegram_to_nostr.py /path/to/image.jpg "Your caption here"
+
+Output: Unsigned draft JSON with NIP-94 image metadata
 """
 
 import os
 import sys
 import json
 import hashlib
-import time
 import requests
 from datetime import datetime
 
-def compute_sha256(file_path):
-    """Compute SHA-256 hash of file"""
-    sha256_hash = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-    return sha256_hash.hexdigest()
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
-def upload_to_blossom(image_path, blossom_servers=None):
-    """Upload to Blossom servers (preferred)"""
-    if not blossom_servers:
-        blossom_servers = [
-            "https://blossom.primal.net",
-            "https://cdn.nostrcheck.me",
-            "https://blossom.nostr.build"
-        ]
 
-    sha256 = compute_sha256(image_path)
-    filename = os.path.basename(image_path)
+def validate_image(file_path):
+    """
+    Validate image before upload.
+    
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    if not os.path.exists(file_path):
+        return False, f"File not found: {file_path}"
+    
+    file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+    if file_size_mb > 5:
+        return False, f"File too large: {file_size_mb:.1f}MB (max 5MB)"
+    
+    _, ext = os.path.splitext(file_path.lower())
+    valid_formats = {'.jpg', '.jpeg', '.gif', '.png'}
+    if ext not in valid_formats:
+        return False, f"Invalid format: {ext} (allowed: {', '.join(valid_formats)})"
+    
+    return True, None
 
-    for server in blossom_servers:
-        url = f"{server.rstrip('/')}/upload"
-        print(f"→ Trying Blossom upload to {server}...")
 
-        try:
-            with open(image_path, 'rb') as f:
-                files = {'file': (filename, f)}
-                response = requests.post(url, files=files, timeout=30)
-
-            if response.status_code in (200, 201):
-                blossom_url = f"{server.rstrip('/')}/{sha256}{os.path.splitext(filename)[1]}"
-                print(f"✅ Blossom upload successful: {blossom_url}")
-                return blossom_url, sha256
-        except Exception as e:
-            print(f"   Failed {server}: {e}")
-
-    print("⚠️ All Blossom servers failed")
-    return None, None
-
-def upload_to_picsur(image_path):
-    """Fallback to local Picsur"""
-    host = os.getenv("PICSUR_URL", "http://localhost:3000")
+def upload_to_blossom(image_path):
+    """
+    Upload image to Blossom servers.
+    
+    Returns:
+        tuple: (success, image_url, sha256_hash or error_message)
+    """
+    # Blossom servers to try
+    blossom_servers = [
+        "https://blossom.primal.net/upload",
+        "https://blossom.nostr.build/upload",
+        "https://blossom.nostrcheck.me/upload",
+    ]
+    
+    # Read file
     try:
         with open(image_path, 'rb') as f:
-            r = requests.post(f"{host}/upload", files={'file': f}, timeout=20)
-            if r.ok:
-                data = r.json() if r.content else {}
-                url = data.get('url') or f"{host.rstrip('/')}/i/{data.get('id', '')}"
-                print(f"✅ Picsur upload successful: {url}")
-                return url
+            image_data = f.read()
     except Exception as e:
-        print(f"Picsur upload failed: {e}")
-    return None
+        return False, None, f"Cannot read file: {str(e)[:80]}"
+    
+    # Calculate SHA256
+    sha256_hash = hashlib.sha256(image_data).hexdigest()
+    
+    # Try each server
+    for server_url in blossom_servers:
+        try:
+            print(f"  Uploading to {server_url.split('/')[2]}...")
+            response = requests.post(
+                server_url,
+                files={'file': image_data},
+                timeout=30
+            )
+            
+            if response.status_code in [200, 201]:
+                # Success - extract URL
+                result = response.json()
+                image_url = result.get('url')
+                if image_url:
+                    print(f"  ✅ Uploaded successfully")
+                    return True, image_url, sha256_hash
+            elif response.status_code == 413:
+                print(f"  ⚠️  Server: File too large (413)")
+            elif response.status_code == 429:
+                print(f"  ⚠️  Server: Rate limited (429)")
+            else:
+                print(f"  ⚠️  Server returned {response.status_code}")
+        except requests.Timeout:
+            print(f"  ⚠️  Timeout connecting to server")
+        except Exception as e:
+            print(f"  ⚠️  Error: {str(e)[:60]}")
+    
+    return False, None, "All upload servers failed"
+
 
 def main():
     if len(sys.argv) < 3:
         print(json.dumps({
             "status": "error",
-            "message": "Usage: telegram_to_nostr.py <image_path> \"Caption text\""
-        }, indent=2))
+            "message": "Usage: telegram_to_nostr.py <image_path> <caption>"
+        }))
         sys.exit(1)
-
+    
     image_path = sys.argv[1]
     caption = sys.argv[2]
-
-    if not os.path.exists(image_path):
-        print(json.dumps({"status": "error", "message": f"Image not found: {image_path}"}))
+    
+    print("\n=== IMAGE UPLOAD & DRAFT CREATION ===\n")
+    
+    # 1. Validate image
+    print("✓ Validating image...")
+    is_valid, error = validate_image(image_path)
+    if not is_valid:
+        print(json.dumps({
+            "status": "error",
+            "message": error
+        }))
         sys.exit(1)
-
-    print(f"Processing: {image_path}")
-
-    # 1. Try Blossom first (modern/decentralized)
-    image_url, sha256 = upload_to_blossom(image_path)
-
-    # 2. Fallback to Picsur (local testing)
-    if not image_url:
-        image_url = upload_to_picsur(image_path)
-
-    if not image_url:
-        print(json.dumps({"status": "error", "message": "All upload methods failed"}))
+    
+    print(f"  ✅ Valid: {os.path.basename(image_path)}")
+    
+    # 2. Upload to Blossom
+    print("\n✓ Uploading to Blossom servers...")
+    success, image_url, result = upload_to_blossom(image_path)
+    
+    if not success:
+        print(json.dumps({
+            "status": "error",
+            "message": result
+        }))
         sys.exit(1)
-
-    # 3. Send to Telegram (optional)
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
-    if bot_token and chat_id:
-        try:
-            with open(image_path, 'rb') as photo:
-                requests.post(
-                    f"https://api.telegram.org/bot{bot_token}/sendPhoto",
-                    data={'chat_id': chat_id, 'caption': caption},
-                    files={'photo': photo}
-                )
-            print("✅ Sent to Telegram")
-        except Exception as e:
-            print(f"Telegram warning: {e}")
-
-    # 4. Create Nostr content
+    
+    sha256 = result  # result is sha256_hash on success
+    
+    # 3. Create Nostr content with NIP-94 metadata
+    print("\n✓ Creating Nostr draft...")
     content = f"{caption}\n\n{image_url}"
-
+    
+    # Build NIP-94 compliant tags
+    tags = [
+        ["url", image_url],
+        ["m", "image/jpeg"]  # MIME type
+    ]
+    if sha256:
+        tags.append(["x", sha256])  # SHA-256 hash
+    
     result = {
         "status": "success",
-        "message": "Ready for Nostr",
+        "message": "Ready for Nostr publishing",
         "image_url": image_url,
         "caption": caption,
         "content_for_nostr": content,
         "timestamp": datetime.now().isoformat()
     }
-
+    
     print("\n=== FINAL RESULT ===")
     print(json.dumps(result, indent=2, ensure_ascii=False))
-
+    
     # Save draft for publishing
-    with open("last_draft.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "content": content,
-            "kind": 1,
-            "tags": [["imeta", f"url {image_url}", "m image/jpeg", f"x {sha256}" if sha256 else ""]]
-        }, f, indent=2)
+    draft_data = {
+        "content": content,
+        "kind": 1,
+        "tags": tags
+    }
+    
+    draft_path = os.path.expanduser("~/.hermes/nostr-last-draft.json")
+    with open(draft_path, "w", encoding="utf-8") as f:
+        json.dump(draft_data, f, indent=2)
+    
+    print(f"\n💡 Next step:")
+    print(f"   1. Review the draft above")
+    print(f"   2. Type YES to approve")
+    print(f"   3. Run: NOSTR_APPROVE=1 ~/.hermes/nostr-env/bin/python3 ~/.hermes/skills/social-media/nostr/scripts/publish.py {draft_path}")
 
-    print("\n💡 Next step: ./scripts/publish.py last_draft.json")
 
 if __name__ == "__main__":
     main()

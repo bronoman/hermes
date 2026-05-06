@@ -15,6 +15,7 @@ Uses raw WebSocket + NIP-01 protocol (NOT nostr-sdk, which has API instability).
 import websocket
 import json
 import time
+import os
 from datetime import datetime
 
 def read_nostr(command="recent"):
@@ -23,7 +24,7 @@ def read_nostr(command="recent"):
     Args:
         command: "recent" (default), "mentions", "kind1", etc.
     """
-    relays_str = __import__("os").getenv("NOSTR_RELAYS", "wss://relay.damus.io,wss://nostr.wine,wss://nos.lol")
+    relays_str = os.getenv("NOSTR_RELAYS", "wss://relay.damus.io,wss://nostr.wine,wss://nos.lol")
     relays = [r.strip() for r in relays_str.split(",") if r.strip()]
     
     subscription_id = f"hermes_{int(time.time())}"

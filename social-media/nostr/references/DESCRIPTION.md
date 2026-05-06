@@ -310,3 +310,4 @@ The author is not responsible or liable for:
 
 This project is an expression of personal technical exploration and free speech. It does not constitute professional software, financial advice, or legal counsel.
 By using this skill you agree that you are solely responsible for your own actions and compliance with all applicable laws.
+
