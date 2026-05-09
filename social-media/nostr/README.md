@@ -1,6 +1,11 @@
 # Nostr Skill for Hermes Agent
 
-## Description
+## What is Nostr
+**Nostr** (Notes and Other Stuff Transmitted by Relays) is an open, permissionless protocol designed as a decentralized alternative to Twitter/X, Facebook etc. Instead of signing up with a company, you generate your own cryptographic keypair that becomes your permanent identity. You then sign short messages (called events or notes) and send them to any number of independent relays that anyone in the world can run — no approval required. Because the protocol is completely open, there is no central authority, no gatekeepers, and no single company that can suspend your account, shadow-ban your posts, or delete your content. You can use any client you like (Damus, Amethyst, Primal, etc.), switch between them instantly, and your followers will still see you because your identity lives on the keys, not on any platform.
+
+What truly sets Nostr apart is its lack of central algorithms and corporate control plus the option to monetize your content using the Bitcoin Lightning Protocol ("you zap"). There is no opaque recommendation engine deciding what you see — you follow the people and relays you choose, and you receive exactly the content they publish in chronological order. This creates a clean, transparent, and truly permissionless public square where anyone can participate, build tools, run relays, or write their own clients without asking anyone for permission. For builders like you integrating this Hermes skill, Nostr’s open nature makes automation seamless: your agent can publish events, listen to replies and zaps (planned for this Hermes skill). Many users run Nostr alongside X — using X for mass reach and Nostr for uncensorable, direct, and monetizable conversation.
+
+## Description of this skill
 Complete, secure Nostr integration for Hermes Agent. Read events, draft posts, upload images to Blossom, publish with explicit TTY approval. NIP-94 compliant image metadata.
 
 ## Meta-Data
