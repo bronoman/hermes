@@ -33,14 +33,14 @@ Live cryptocurrency price data integration with private key isolation and fallba
 
 ## Features Overview
 
-| Feature                           | Status     | Auth Required | Fallback          |
-|-----------------------------------|------------|---------------|-------------------|
+| Feature                           | Status     | Auth Required             | Fallback          |
+|-----------------------------------|------------|---------------------------|-------------------|
 | Fetch BTC/USD Price               | ✅         | Optional (Demo key works) | Kraken API        |
-| Fetch Multi-Asset Prices          | ✅         | Optional      | Kraken API        |
-| 24h Price Change                  | ✅         | Optional      | Kraken (limited)  |
-| Market Cap & Volume               | ✅ Pro     | Optional      | Kraken (limited)  |
-| Format Price Data                 | ✅         | No            | —                 |
-| Automatic Price Refresh           | ✅         | No            | —                 |
+| Fetch Multi-Asset Prices          | ✅         | Optional                  | Kraken API        |
+| 24h Price Change                  | ✅         | Optional                  | Kraken (limited)  |
+| Market Cap & Volume               | ✅ Pro     | Optional                  | Kraken (limited)  |
+| Format Price Data                 | ✅         | No                        | —                 |
+| Automatic Price Refresh           | ✅         | No                        | —                 |
 
 ---
 
@@ -140,7 +140,7 @@ If CoinGecko key fails or is rate-limited, script **automatically falls back to 
 │  1. Try CoinGecko (has more data)       │
 │     ├─ With Demo key: 10-50 calls/min   │
 │     ├─ With Pro key: unlimited          │
-│     └─ On rate-limit: timeout ×3, then→├─┐
+│     └─ On rate-limit: timeout ×3, then →├─┐
 │  2. Fall back to Kraken (no auth)       │ │
 │     ├─ Always works for BTC/USD         │ │
 │     ├─ Limited to major pairs           │ │
