@@ -12,7 +12,12 @@ from pathlib import Path
 
 def _load_credential(key_name: str = "API_KEY") -> str:
     """Retrieve credential from system configuration"""
-    return os.getenv(key_name, "")
+    try:
+        from dotenv import dotenv_values
+        env_vars = dotenv_values()
+        return env_vars.get(key_name, "")
+    except:
+        return ""
 
 def get_coingecko_api_key() -> str:
     """Load price service API key from environment variables"""
