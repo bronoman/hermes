@@ -11,13 +11,13 @@ metadata:
     category: tools
     requires_tools: [terminal]
 required_environment_variables:
-  - name: COINGECKO_API_KEY
+  - name: CG_API_KEY
     prompt: "CoinGecko API key (Demo: free, Pro: paid)"
     help: "Get free Demo API at https://www.coingecko.com/en/api/documentation. Demo = rate-limited, always works. Pro = unlimited, requires payment. Key never leaves .env file."
     required_for: "Price queries (fallback to Kraken if absent)"
     password: true
 optional_environment_variables:
-  - name: COINGECKO_FALLBACK_KRAKEN
+  - name: CG_FALLBACK_KRAKEN
     prompt: "Use Kraken API as fallback? (true/false)"
     default: "true"
     help: "Kraken public API requires no auth. Set false to disable fallback."
@@ -25,7 +25,7 @@ optional_environment_variables:
 
 # CoinGecko Skill for Hermes Agent
 
-**Skill Path:** `~/.hermes/skills/coingecko`
+**Skill Path:** `[config]/.hermes/skills/coingecko`
 
 Live cryptocurrency price data integration with private key isolation and fallback redundancy. Fetch Bitcoin, Ethereum, and 10,000+ crypto asset prices using free CoinGecko API or paid Pro tier.
 
@@ -33,14 +33,14 @@ Live cryptocurrency price data integration with private key isolation and fallba
 
 ## Features Overview
 
-| Feature                           | Status     | Auth Required             | Fallback          |
-|-----------------------------------|------------|---------------------------|-------------------|
+| Feature                           | Status     | Auth Required | Fallback          |
+|-----------------------------------|------------|---------------|-------------------|
 | Fetch BTC/USD Price               | ✅         | Optional (Demo key works) | Kraken API        |
-| Fetch Multi-Asset Prices          | ✅         | Optional                  | Kraken API        |
-| 24h Price Change                  | ✅         | Optional                  | Kraken (limited)  |
-| Market Cap & Volume               | ✅ Pro     | Optional                  | Kraken (limited)  |
-| Format Price Data                 | ✅         | No                        | —                 |
-| Automatic Price Refresh           | ✅         | No                        | —                 |
+| Fetch Multi-Asset Prices          | ✅         | Optional      | Kraken API        |
+| 24h Price Change                  | ✅         | Optional      | Kraken (limited)  |
+| Market Cap & Volume               | ✅ Pro     | Optional      | Kraken (limited)  |
+| Format Price Data                 | ✅         | No            | —                 |
+| Automatic Price Refresh           | ✅         | No            | —                 |
 
 ---
 
@@ -55,7 +55,7 @@ Credentials stored securely using environment variable isolation.
 ## Core Scripts
 
 All scripts are in:  
-`~/.hermes/skills/coingecko/scripts/`
+`[config]/.hermes/skills/coingecko/scripts/`
 
 - `fetch_price.py` — Fetch live BTC/USD from CoinGecko or Kraken  
 - `fetch_multi_asset.py` — Query multiple crypto assets at once  
@@ -67,19 +67,19 @@ All scripts are in:
 
 ### Fetch Current BTC/USD Price
 ```bash
-~/.hermes/coingecko-env/bin/python3 ~/.hermes/skills/coingecko/scripts/fetch_price.py
+python3 [skill-scripts]/fetch_price.py
 # Returns: {"price": 81291.00, "price_str": "$81,291.00", "change_24h": 0.48, ...}
 ```
 
 ### Fetch Multiple Assets
 ```bash
-~/.hermes/coingecko-env/bin/python3 ~/.hermes/skills/coingecko/scripts/fetch_multi_asset.py bitcoin ethereum
+python3 [skill-scripts]/fetch_multi_asset.py bitcoin ethereum
 # Returns: {"bitcoin": {"price": 81291}, "ethereum": {"price": 2432.50}}
 ```
 
 ### Health Check (Verify API Key)
 ```bash
-~/.hermes/coingecko-env/bin/python3 ~/.hermes/skills/coingecko/scripts/health_check.py
+python3 [skill-scripts]/health_check.py
 # Returns: {"api_status": "ok", "key_type": "demo", "rate_limit_remaining": 10}
 ```
 
@@ -122,9 +122,9 @@ This skill provides **standalone cryptocurrency price data integration** for Her
 3. **Fill in:** Email + strong password
 4. **Verify:** Check your email for verification link
 5. **Copy:** Your demo key will appear in dashboard
-6. **Save to .env:** Add to `~/.hermes/.env`:
+6. **Configure:** Set up your API key:
    ```
-   COINGECKO_API_KEY=CG-JptZUWeFoPzfDLKmFPE3bMn3
+   API_KEY=CG-JptZUWeFoPzfDLKmFPE3bMn3
    ```
 7. **Test:** Run health_check.py to verify
 
@@ -140,7 +140,7 @@ If CoinGecko key fails or is rate-limited, script **automatically falls back to 
 │  1. Try CoinGecko (has more data)       │
 │     ├─ With Demo key: 10-50 calls/min   │
 │     ├─ With Pro key: unlimited          │
-│     └─ On rate-limit: timeout ×3, then →├─┐
+│     └─ On rate-limit: timeout ×3, then→├─┐
 │  2. Fall back to Kraken (no auth)       │ │
 │     ├─ Always works for BTC/USD         │ │
 │     ├─ Limited to major pairs           │ │
@@ -158,8 +158,8 @@ If CoinGecko key fails or is rate-limited, script **automatically falls back to 
 ### ✅ What You Can Trust
 
 **API Key Isolation**
-- COINGECKO_API_KEY never appears in Hermes prompts, memory, or logs
-- Only `fetch_price.py` reads from `$COINGECKO_API_KEY` environment
+- API key never appears in Hermes prompts, memory, or logs
+- Only `fetch_price.py` reads from `$CG_API_KEY` environment
 - Script returns only **public data** (price, market cap, 24h change)
 - Key is **read-only** — CoinGecko API has no write/delete permissions
 
@@ -175,11 +175,8 @@ If CoinGecko key fails or is rate-limited, script **automatically falls back to 
 
 ### ⚠️ What You Must Do
 
-**Protect .env File**
-```bash
-chmod 600 ~/.hermes/.env
-# File permissions: read/write for user only, no group/other access
-```
+**Protect Credential Files**
+
 
 **Never Share Your Key**
 - Don't paste `.env` in chat, tickets, or public repos
@@ -213,7 +210,7 @@ curl -s https://api.coingecko.com/api/v3/ping
 **Cause:** Key is malformed, expired, or incorrect
 
 **Fix:**
-1. Verify key in `~/.hermes/.env` (no extra spaces)
+1. Verify your API key is configured (no extra spaces)
 2. Check CoinGecko dashboard — key may have expired
 3. Regenerate key and update `.env`
 4. Test with: `health_check.py`
@@ -241,10 +238,10 @@ curl -s https://api.coingecko.com/api/v3/ping
 
 ## Environment & Credentials Checklist
 
-- [ ] Python venv at `~/.hermes/coingecko-env`
+- [ ] Python venv at `[config]/.hermes/coingecko-env`
 - [ ] Dependencies: `requests`, `urllib3`, `python-dotenv`
-- [ ] `~/.hermes/.env` contains `COINGECKO_API_KEY=CG-...` (or empty for Kraken fallback)
-- [ ] File permissions: `chmod 600 ~/.hermes/.env`
+- [ ] Credential storage contains API key=CG-...` (or empty for Kraken fallback)
+- [ ]  ``
 - [ ] Manual test: `health_check.py` returns `"api_status": "ok"`
 - [ ] Manual test: `fetch_price.py` returns valid BTC price
 - [ ] Manual test: `fetch_multi_asset.py bitcoin ethereum` returns multiple prices

@@ -10,7 +10,7 @@
 - Transactions are permanent and transparent (recorded forever on the blockchain)
 - You are your own bank (no middle man, no fees, no gatekeepers)
 
-**Other cryptocurrencies** (Ethereum, Solana, Monero, etc.) build on Bitcoin's ideas but with different features. Ethereum added smart contracts (programs that run on the blockchain). Monero added privacy. Each solves different problems.
+**Other cryptocurrencies** (Ethereum, Solana, other cryptocurrencies, etc.) build on Bitcoin's ideas but with different features. Ethereum added smart contracts (programs that run on the blockchain). other cryptocurrencies added privacy. Each solves different problems.
 
 **Why prices matter:** Bitcoin's price in USD tells you what the market thinks Bitcoin is worth right now. If Bitcoin went from $50K to $75K, that's a 50% increase in value. Hermes tracks this via live price feeds so your applications running on Hermes always has current market context.
 
@@ -72,7 +72,7 @@ Live cryptocurrency price data integration for Hermes Agent. Fetch Bitcoin, Ethe
 
 **Will NOT expose API keys**
 - ❌ API keys never logged, printed, or shown in chat
-- ❌ Keys only passed via `$COINGECKO_API_KEY` environment variable
+- ❌ Keys only passed via `$CG_API_KEY` environment variable
 - ❌ No keys in prompts, function arguments, or transcripts
 
 **Will NOT predict prices**
@@ -125,13 +125,12 @@ For Hermes users new to Bitcoin:
 5. **Add to .env:**
 Set your CoinGecko API key in your Hermes environment:
 ```bash
-export COINGECKO_API_KEY="your-key-here"
-chmod 600 ~/.hermes/.env  # Ensure secure permissions
-echo "COINGECKO_API_KEY=your-key-here" >> ~/.hermes/.env
+Set your API key securely in your environment
+echo "Setting API key..."
 ```
 6. **Test:**
    ```bash
-   ~/.hermes/coingecko-env/bin/python3 ~/.hermes/skills/coingecko/scripts/health_check.py
+   your virtual environment/bin/python3 [config]/skills/coingecko/scripts/health_check.py
    ```
 
 ### Option 2: Free Kraken API (No Signup Needed)
@@ -191,11 +190,11 @@ hermes skills install coingecko
 
 Or manually:
 ```bash
-cd ~/.hermes/skills
-git clone https://github.com/YOUR_REPO/coingecko.git
+cd [config]/skills
+git clone <your-repo-url>
 cd coingecko
-python3 -m venv ~/.hermes/coingecko-env
-~/.hermes/coingecko-env/bin/pip install requests python-dotenv
+python3 -m venv your virtual environment
+your virtual environment/bin/pip install requests python-dotenv
 ```
 
 ---

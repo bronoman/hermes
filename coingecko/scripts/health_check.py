@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Health check for CoinGecko API and fallback to Kraken.
+Health check for price service API and fallback to Kraken.
 Verifies API key validity, rate limit status, and system readiness.
 """
 
@@ -11,9 +11,9 @@ from pathlib import Path
 from datetime import datetime
 
 def get_coingecko_api_key() -> str:
-    """Load CoinGecko API key from environment variables"""
+    """Load price service API key from environment variables"""
     # Try environment variable first
-    api_key = os.getenv("COINGECKO_API_KEY", "")
+    api_key = os.getenv("API_KEY", "")
     if api_key:
         return api_key
     
@@ -23,7 +23,7 @@ def get_coingecko_api_key() -> str:
         if config_path.exists():
             with open(config_path) as f:
                 for line in f:
-                    if "COINGECKO_API_KEY" in line:
+                    if "API_KEY" in line:
                         return line.split("=", 1)[1].strip()
     except:
         pass
@@ -60,7 +60,7 @@ def health_check() -> dict:
     else:
         result["key_type"] = "demo" if api_key.startswith("CG-") else "unknown"
         
-        # Test CoinGecko API
+        # Test price service API
         try:
             url = "https://api.coingecko.com/api/v3/simple/price"
             params = {

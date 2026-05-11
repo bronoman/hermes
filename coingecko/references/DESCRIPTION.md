@@ -38,8 +38,8 @@
 - ❌ Read-only data fetch only
 
 **Will NOT expose API keys**
-- ❌ COINGECKO_API_KEY never logged, printed, or shown in chat
-- ❌ API keys only passed via `$COINGECKO_API_KEY` environment variable
+- ❌ API_KEY never logged, printed, or shown in chat
+- ❌ API keys only passed via `$API_KEY` environment variable
 - ❌ No keys in prompts, function arguments, or transcripts
 - ❌ Sandbox scripts are the only boundary that touches the key
 
@@ -78,8 +78,8 @@
 ### What You Can Trust
 
 ✅ **API Key Isolation**
-- COINGECKO_API_KEY never appears in Hermes prompts, memory, or logs
-- Only `fetch_price.py` and `health_check.py` scripts read `$COINGECKO_API_KEY`
+- API_KEY never appears in Hermes prompts, memory, or logs
+- Only `fetch_price.py` and `health_check.py` scripts read `$API_KEY`
 - Scripts return only **public data** (price, market cap, volume, 24h change)
 - CoinGecko API has **zero permissions** for trading, transfers, or account changes
 
@@ -228,7 +228,7 @@ def get_btc_price(prefer_source="coingecko", timeout=10) -> dict:
 ```
 
 **Flow:**
-1. Load `$COINGECKO_API_KEY` from environment (if configured)
+1. Load `$API_KEY` from environment (if configured)
 2. Call CoinGecko API with Demo key (3 retries on timeout)
 3. If CoinGecko succeeds: return BTC price + market data
 4. If CoinGecko fails/rate-limited: fall back to Kraken
@@ -278,13 +278,66 @@ def get_multi_asset_prices(assets=["bitcoin", "ethereum"], timeout=10) -> dict:
 
 **Usage:**
 ```bash
-~/.hermes/coingecko-env/bin/python3 fetch_multi_asset.py bitcoin ethereum cardano solana
+[config]/.hermes/coingecko-env/bin/python3 fetch_multi_asset.py bitcoin ethereum cardano solana
 # Returns: {"bitcoin": {...}, "ethereum": {...}, ...}
 ```
 
 ---
 
-### 3. `health_check.py` — System Verification
+### 3. `generate_dib_content.py` — DIB Content Generator
+
+**Purpose:** Generate complete Bitcoin section for Daily Intelligence Brief
+
+**Entry Point:**
+```python
+def get_bitcoin_content_live() -> dict:
+    """
+    Generate Bitcoin DIB section with LIVE price from CoinGecko.
+    
+    Returns:
+        {
+            "domain_label": "Bitcoin & Markets",
+            "headline": "Bitcoin Consolidates at $81,291.00",  # Dynamic
+            "summary": "Bitcoin trading at $81,291.00 with...",
+            "badge": "SIDEWAYS MOVEMENT",  # Dynamic based on 24h change
+            "bluf": "BTC ▲ 0.48%: Market consolidating...",
+            "sections": [
+                {
+                    "heading": "MARKET SNAPSHOT",
+                    "bullet_points": [
+                        "Price: $81,291.00 ▲ 0.48%",
+                        "Source: CoinGecko",
+                        ...
+                    ]
+                },
+                ...
+            ],
+            "pull_quote": "Bitcoin trading near $81,291.00..."
+        }
+    """
+```
+
+**Dynamic Headline Logic:**
+```python
+change = price_data.get("change_24h", 0)
+if change > 1:
+    headline = f"Bitcoin Surges {change:.1f}% to {price_str}"
+elif change < -1:
+    headline = f"Bitcoin Slides {abs(change):.1f}% to {price_str}"
+else:
+    headline = f"Bitcoin Consolidates at {price_str}"
+```
+
+**Badge Assignment:**
+| Badge | Condition |
+|-------|-----------|
+| GOOD NEWS | 24h change > 1% |
+| SOME FEAR | 24h change < -1% |
+| SIDEWAYS MOVEMENT | -1% ≤ change ≤ 1% |
+
+---
+
+### 4. `health_check.py` — System Verification
 
 **Purpose:** Verify API connectivity and key validity
 
@@ -325,7 +378,7 @@ def check_coingecko_health() -> dict:
 ### Required
 
 ```bash
-COINGECKO_API_KEY=CG-JptZUWeFoPzfDLKmFPE3bMn3
+API_KEY=CG-JptZUWeFoPzfDLKmFPE3bMn3
 # Demo or Pro key from https://www.coingecko.com/en/api/documentation
 # Optional but recommended (falls back to Kraken if absent)
 ```
@@ -333,7 +386,7 @@ COINGECKO_API_KEY=CG-JptZUWeFoPzfDLKmFPE3bMn3
 ### Optional
 
 ```bash
-COINGECKO_FALLBACK_KRAKEN=true
+CG_FALLBACK_KRAKEN=true
 # Enable/disable Kraken fallback (default: true)
 # Set to "false" to raise error instead of falling back
 ```
@@ -348,36 +401,36 @@ COINGECKO_FALLBACK_KRAKEN=true
 ┌───────────────────────────────────────────────────────────┐
 │ fetch_price.py::get_btc_price()                           │
 │                                                           │
-│  INPUT: prefer_source="coingecko" (or "kraken")           │
+│  INPUT: prefer_source="coingecko" (or "kraken")          │
 │                                                           │
-│  ┌─────────────────────────────────────────────┐          │
-│  │ PRIMARY SOURCE (prefer_source)              │          │
-│  │                                             │          │
-│  │ if prefer_source == "coingecko":            │          │
-│  │   1. Fetch from CoinGecko API               │          │
-│  │   2. With timeout=10s, retries=3            │          │
-│  │   3. Return if success                      │          │
-│  │   4. On error/timeout → next branch         │          │
-│  └─────────────────────────────────────────────┘          │
+│  ┌─────────────────────────────────────────────┐         │
+│  │ PRIMARY SOURCE (prefer_source)              │         │
+│  │                                             │         │
+│  │ if prefer_source == "coingecko":            │         │
+│  │   1. Fetch from CoinGecko API               │         │
+│  │   2. With timeout=10s, retries=3            │         │
+│  │   3. Return if success                      │         │
+│  │   4. On error/timeout → next branch         │         │
+│  └─────────────────────────────────────────────┘         │
 │                       │                                   │
 │                       │ if failed                         │
 │                       ↓                                   │
-│  ┌─────────────────────────────────────────────┐          │
-│  │ FALLBACK SOURCE (opposite of primary)       │          │
-│  │                                             │          │
-│  │ if fallback_disabled:                       │          │
-│  │   return {"success": False, "error": "..."} │          │
-│  │                                             │          │
-│  │ else:                                       │          │
-│  │   1. Fetch from Kraken API (XBTUSD)         │          │
-│  │   2. No auth required                       │          │
-│  │   3. No rate limit (public endpoint)        │          │
-│  │   4. Return if success                      │          │
-│  │   5. If both fail → return error            │          │
-│  └─────────────────────────────────────────────┘          │
+│  ┌─────────────────────────────────────────────┐         │
+│  │ FALLBACK SOURCE (opposite of primary)       │         │
+│  │                                             │         │
+│  │ if fallback_disabled:                       │         │
+│  │   return {"success": False, "error": "..."}│         │
+│  │                                             │         │
+│  │ else:                                       │         │
+│  │   1. Fetch from Kraken API (XBTUSD)        │         │
+│  │   2. No auth required                       │         │
+│  │   3. No rate limit (public endpoint)        │         │
+│  │   4. Return if success                      │         │
+│  │   5. If both fail → return error            │         │
+│  └─────────────────────────────────────────────┘         │
 │                       │                                   │
 │                       ↓                                   │
-│  OUTPUT: {"success": bool, "price": N, "source": "..."}   │
+│  OUTPUT: {"success": bool, "price": N, "source": "..."}  │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -433,16 +486,16 @@ health_check.py | grep rate_limit_remaining
 **Diagnosis:**
 ```bash
 # Verify key format
-echo $COINGECKO_API_KEY | grep "^CG-"
+echo $API_KEY | grep "^CG-"
 # Should start with "CG-"
 
 # Check .env file
-Verify API key is set in your environment variables (check with: `echo $COINGECKO_API_KEY`)
+Verify API key is set in your environment variables (check with: `echo $API_KEY`)
 # Should not have trailing spaces
 ```
 
 **Solutions:**
-1. Check for extra whitespace: `COINGECKO_API_KEY=CG-key` (no spaces)
+1. Check for extra whitespace: `API_KEY=CG-key` (no spaces)
 2. Regenerate key in CoinGecko dashboard (takes 2 min)
 3. Update environment with new key
 4. Test: `health_check.py`
@@ -468,11 +521,11 @@ Verify API key is set in your environment variables (check with: `echo $COINGECK
 ```
 Operation          | Latency    | Notes
 -------------------|------------|----------------------------------
-CoinGecko single   | 200-500ms  | Single asset price
-CoinGecko multi    | 200-500ms  | Same latency for 1 or 100 assets
-Kraken single      | 100-300ms  | Faster, fewer assets
-Retry w/ backoff   | 1-3s       | 3 retries @ [0, 1, 2]s delays
-Full fallback      | 500-3000ms | CoinGecko failure + Kraken retry
+CoinGecko single    | 200-500ms  | Single asset price
+CoinGecko multi     | 200-500ms  | Same latency for 1 or 100 assets
+Kraken single       | 100-300ms  | Faster, fewer assets
+Retry w/ backoff    | 1-3s       | 3 retries @ [0, 1, 2]s delays
+Full fallback       | 500-3000ms | CoinGecko failure + Kraken retry
 ```
 
 ### Rate Limit Capacity
@@ -510,7 +563,16 @@ Pro API:
    Source: Kraken
 ```
 
-**Test 3: Health Check**
+**Test 3: DIB Content Generation**
+```
+✅ PASS: Generate Bitcoin DIB section with live price
+   Price in headline: Yes ✓
+   Badge dynamic: Yes ✓
+   24h change embedded: Yes ✓
+   Freshness: Current timestamp ✓
+```
+
+**Test 4: Health Check**
 ```
 ✅ PASS: Verify API + key + fallback
    API status: ok

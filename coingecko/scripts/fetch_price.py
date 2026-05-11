@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fetch live BTC/USD price from CoinGecko API with Kraken fallback.
+Fetch live BTC/USD price from price service API with Kraken fallback.
 Supports both Demo (free) and Pro (paid) API keys.
 """
 
@@ -10,9 +10,9 @@ import requests
 from pathlib import Path
 
 def get_coingecko_api_key() -> str:
-    """Load CoinGecko API key from environment variables"""
+    """Load price service API key from environment variables"""
     # Try environment variable first
-    api_key = os.getenv("COINGECKO_API_KEY", "")
+    api_key = os.getenv("API_KEY", "")
     if api_key:
         return api_key
     
@@ -22,7 +22,7 @@ def get_coingecko_api_key() -> str:
         if config_path.exists():
             with open(config_path) as f:
                 for line in f:
-                    if "COINGECKO_API_KEY" in line:
+                    if "API_KEY" in line:
                         return line.split("=", 1)[1].strip()
     except:
         pass
@@ -31,7 +31,7 @@ def get_coingecko_api_key() -> str:
 
 def fetch_btc_price_coingecko(timeout: int = 10) -> dict:
     """
-    Fetch BTC/USD price from CoinGecko API.
+    Fetch BTC/USD price from price service API.
     
     Returns:
         {
@@ -39,7 +39,7 @@ def fetch_btc_price_coingecko(timeout: int = 10) -> dict:
             "price_str": str,         # e.g., "$81,267.00"
             "change_24h": float,      # e.g., -0.22
             "change_badge": str,      # e.g., "▼ 0.22%" or "▲ 1.15%"
-            "source": str,            # "CoinGecko"
+            "source": str,            # "price service"
             "success": bool
         }
     """
@@ -48,7 +48,7 @@ def fetch_btc_price_coingecko(timeout: int = 10) -> dict:
         if not api_key:
             return {
                 "success": False,
-                "error": "API key not configured. Set COINGECKO_API_KEY environment variable."
+                "error": "API key not configured. Set API_KEY environment variable."
             }
         
         url = "https://api.coingecko.com/api/v3/simple/price"
@@ -108,7 +108,7 @@ def fetch_btc_price_coingecko(timeout: int = 10) -> dict:
             "change_24h": change_24h,
             "change_badge": change_badge,
             "badge_type": badge_type,
-            "source": "CoinGecko",
+            "source": "price service",
             "market_cap_usd": btc_data.get("usd_market_cap"),
             "volume_24h_usd": btc_data.get("usd_24h_vol")
         }
