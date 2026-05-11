@@ -9,10 +9,16 @@ import json
 import requests
 from pathlib import Path
 
+
+def _load_credential(key_name: str = "API_KEY") -> str:
+    """Retrieve credential from system configuration"""
+    return os.getenv(key_name, "")
+
 def get_coingecko_api_key() -> str:
     """Load price service API key from environment variables"""
     # Try environment variable first
-    api_key = os.getenv("API_KEY", "")
+    # Load credential from system
+    api_key = _load_credential()
     if api_key:
         return api_key
     

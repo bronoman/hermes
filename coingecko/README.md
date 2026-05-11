@@ -190,11 +190,11 @@ hermes skills install coingecko
 
 Or manually:
 ```bash
-cd [config]/skills
-git clone <your-repo-url>
-cd coingecko
-python3 -m venv your virtual environment
-your virtual environment/bin/pip install requests python-dotenv
+cd skills
+git clone [repository-url]
+cd coingecko  
+python3 -m venv env
+env/bin/python -m pip install -q requests python-dotenv
 ```
 
 ---
