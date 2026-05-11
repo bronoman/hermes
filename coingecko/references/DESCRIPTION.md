@@ -286,60 +286,7 @@ def get_multi_asset_prices(assets=["bitcoin", "ethereum"], timeout=10) -> dict:
 
 ---
 
-### 3. `generate_dib_content.py` — DIB Content Generator
-
-**Purpose:** Generate complete Bitcoin section for Daily Intelligence Brief
-
-**Entry Point:**
-```python
-def get_bitcoin_content_live() -> dict:
-    """
-    Generate Bitcoin DIB section with LIVE price from CoinGecko.
-    
-    Returns:
-        {
-            "domain_label": "Bitcoin & Markets",
-            "headline": "Bitcoin Consolidates at $81,291.00",  # Dynamic
-            "summary": "Bitcoin trading at $81,291.00 with...",
-            "badge": "SIDEWAYS MOVEMENT",  # Dynamic based on 24h change
-            "bluf": "BTC ▲ 0.48%: Market consolidating...",
-            "sections": [
-                {
-                    "heading": "MARKET SNAPSHOT",
-                    "bullet_points": [
-                        "Price: $81,291.00 ▲ 0.48%",
-                        "Source: CoinGecko",
-                        ...
-                    ]
-                },
-                ...
-            ],
-            "pull_quote": "Bitcoin trading near $81,291.00..."
-        }
-    """
-```
-
-**Dynamic Headline Logic:**
-```python
-change = price_data.get("change_24h", 0)
-if change > 1:
-    headline = f"Bitcoin Surges {change:.1f}% to {price_str}"
-elif change < -1:
-    headline = f"Bitcoin Slides {abs(change):.1f}% to {price_str}"
-else:
-    headline = f"Bitcoin Consolidates at {price_str}"
-```
-
-**Badge Assignment:**
-| Badge | Condition |
-|-------|-----------|
-| GOOD NEWS | 24h change > 1% |
-| SOME FEAR | 24h change < -1% |
-| SIDEWAYS MOVEMENT | -1% ≤ change ≤ 1% |
-
----
-
-### 4. `health_check.py` — System Verification
+### 3. `health_check.py` — System Verification
 
 **Purpose:** Verify API connectivity and key validity
 
@@ -403,36 +350,36 @@ COINGECKO_FALLBACK_KRAKEN=true
 ┌───────────────────────────────────────────────────────────┐
 │ fetch_price.py::get_btc_price()                           │
 │                                                           │
-│  INPUT: prefer_source="coingecko" (or "kraken")          │
+│  INPUT: prefer_source="coingecko" (or "kraken")           │
 │                                                           │
-│  ┌─────────────────────────────────────────────┐         │
-│  │ PRIMARY SOURCE (prefer_source)              │         │
-│  │                                             │         │
-│  │ if prefer_source == "coingecko":            │         │
-│  │   1. Fetch from CoinGecko API               │         │
-│  │   2. With timeout=10s, retries=3            │         │
-│  │   3. Return if success                      │         │
-│  │   4. On error/timeout → next branch         │         │
-│  └─────────────────────────────────────────────┘         │
+│  ┌─────────────────────────────────────────────┐          │
+│  │ PRIMARY SOURCE (prefer_source)              │          │
+│  │                                             │          │
+│  │ if prefer_source == "coingecko":            │          │
+│  │   1. Fetch from CoinGecko API               │          │
+│  │   2. With timeout=10s, retries=3            │          │
+│  │   3. Return if success                      │          │
+│  │   4. On error/timeout → next branch         │          │
+│  └─────────────────────────────────────────────┘          │
 │                       │                                   │
 │                       │ if failed                         │
 │                       ↓                                   │
-│  ┌─────────────────────────────────────────────┐         │
-│  │ FALLBACK SOURCE (opposite of primary)       │         │
-│  │                                             │         │
-│  │ if fallback_disabled:                       │         │
-│  │   return {"success": False, "error": "..."}│         │
-│  │                                             │         │
-│  │ else:                                       │         │
-│  │   1. Fetch from Kraken API (XBTUSD)        │         │
-│  │   2. No auth required                       │         │
-│  │   3. No rate limit (public endpoint)        │         │
-│  │   4. Return if success                      │         │
-│  │   5. If both fail → return error            │         │
-│  └─────────────────────────────────────────────┘         │
+│  ┌─────────────────────────────────────────────┐          │
+│  │ FALLBACK SOURCE (opposite of primary)       │          │
+│  │                                             │          │
+│  │ if fallback_disabled:                       │          │
+│  │   return {"success": False, "error": "..."} │          │
+│  │                                             │          │
+│  │ else:                                       │          │
+│  │   1. Fetch from Kraken API (XBTUSD)         │          │
+│  │   2. No auth required                       │          │
+│  │   3. No rate limit (public endpoint)        │          │
+│  │   4. Return if success                      │          │
+│  │   5. If both fail → return error            │          │
+│  └─────────────────────────────────────────────┘          │
 │                       │                                   │
 │                       ↓                                   │
-│  OUTPUT: {"success": bool, "price": N, "source": "..."}  │
+│  OUTPUT: {"success": bool, "price": N, "source": "..."}   │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -523,11 +470,11 @@ cat ~/.hermes/.env | grep COINGECKO_API_KEY
 ```
 Operation          | Latency    | Notes
 -------------------|------------|----------------------------------
-CoinGecko single    | 200-500ms  | Single asset price
-CoinGecko multi     | 200-500ms  | Same latency for 1 or 100 assets
-Kraken single       | 100-300ms  | Faster, fewer assets
-Retry w/ backoff    | 1-3s       | 3 retries @ [0, 1, 2]s delays
-Full fallback       | 500-3000ms | CoinGecko failure + Kraken retry
+CoinGecko single   | 200-500ms  | Single asset price
+CoinGecko multi    | 200-500ms  | Same latency for 1 or 100 assets
+Kraken single      | 100-300ms  | Faster, fewer assets
+Retry w/ backoff   | 1-3s       | 3 retries @ [0, 1, 2]s delays
+Full fallback      | 500-3000ms | CoinGecko failure + Kraken retry
 ```
 
 ### Rate Limit Capacity
@@ -565,16 +512,7 @@ Pro API:
    Source: Kraken
 ```
 
-**Test 3: DIB Content Generation**
-```
-✅ PASS: Generate Bitcoin DIB section with live price
-   Price in headline: Yes ✓
-   Badge dynamic: Yes ✓
-   24h change embedded: Yes ✓
-   Freshness: Current timestamp ✓
-```
-
-**Test 4: Health Check**
+**Test 3: Health Check**
 ```
 ✅ PASS: Verify API + key + fallback
    API status: ok
