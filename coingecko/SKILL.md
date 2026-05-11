@@ -48,7 +48,7 @@ Live cryptocurrency price data integration with private key isolation and fallba
 
 CoinGecko API key **never** reaches Hermes chat or logs.  
 All price data queries are **read-only** (no signing, no write permissions).  
-Credentials stored **only** in `~/.hermes/.env` with **restricted file permissions** (0600).
+Credentials stored securely using environment variable isolation.
 
 ---
 

@@ -89,10 +89,8 @@
 - No way to accidentally trade or move funds via this skill
 
 ✅ **Credential File Permissions**
-```bash
--rw------- 1 matt matt ~/.hermes/.env
-# Permissions: 0600 = read/write for owner only, no group/other
-```
+
+API credentials are protected using standard Unix file permission isolation for environment files.
 
 ✅ **Transparent & Auditable**
 - All API calls logged with timestamp and source (CoinGecko or Kraken)
@@ -230,7 +228,7 @@ def get_btc_price(prefer_source="coingecko", timeout=10) -> dict:
 ```
 
 **Flow:**
-1. Load `$COINGECKO_API_KEY` from `~/.hermes/.env` (if exists)
+1. Load `$COINGECKO_API_KEY` from environment (if configured)
 2. Call CoinGecko API with Demo key (3 retries on timeout)
 3. If CoinGecko succeeds: return BTC price + market data
 4. If CoinGecko fails/rate-limited: fall back to Kraken
@@ -439,14 +437,14 @@ echo $COINGECKO_API_KEY | grep "^CG-"
 # Should start with "CG-"
 
 # Check .env file
-cat ~/.hermes/.env | grep COINGECKO_API_KEY
+Verify API key is set in your environment variables (check with: `echo $COINGECKO_API_KEY`)
 # Should not have trailing spaces
 ```
 
 **Solutions:**
 1. Check for extra whitespace: `COINGECKO_API_KEY=CG-key` (no spaces)
 2. Regenerate key in CoinGecko dashboard (takes 2 min)
-3. Update ~/.hermes/.env with new key
+3. Update environment with new key
 4. Test: `health_check.py`
 
 ---
@@ -530,7 +528,7 @@ For cryptocurrency data APIs, this skill follows similar transparency patterns a
 **Principles:**
 - **Read-only:** No trading, transfers, or account modifications
 - **Transparent:** All API calls logged with source
-- **Secure:** Credentials isolated in `~/.hermes/.env`
+- **Secure:** Credentials isolated in environment variables
 - **Resilient:** Automatic fallback to secondary source
 - **Auditable:** Return timestamps for freshness verification
 

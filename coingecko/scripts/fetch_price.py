@@ -10,16 +10,24 @@ import requests
 from pathlib import Path
 
 def get_coingecko_api_key() -> str:
-    """Load CoinGecko API key from ~/.hermes/.env"""
-    env_file = Path.home() / ".hermes" / ".env"
-    if env_file.exists():
-        with open(env_file) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("COINGECKO_API_KEY="):
-                    return line.split("=", 1)[1]
+    """Load CoinGecko API key from environment variables"""
+    # Try environment variable first
+    api_key = os.getenv("COINGECKO_API_KEY", "")
+    if api_key:
+        return api_key
     
-    return os.getenv("COINGECKO_API_KEY", "")
+    # Fallback: try to load from config file if it exists
+    try:
+        config_path = Path.home() / ".hermes" / ".env"
+        if config_path.exists():
+            with open(config_path) as f:
+                for line in f:
+                    if "COINGECKO_API_KEY" in line:
+                        return line.split("=", 1)[1].strip()
+    except:
+        pass
+    
+    return ""
 
 def fetch_btc_price_coingecko(timeout: int = 10) -> dict:
     """
@@ -40,7 +48,7 @@ def fetch_btc_price_coingecko(timeout: int = 10) -> dict:
         if not api_key:
             return {
                 "success": False,
-                "error": "COINGECKO_API_KEY not found in ~/.hermes/.env"
+                "error": "API key not configured. Set COINGECKO_API_KEY environment variable."
             }
         
         url = "https://api.coingecko.com/api/v3/simple/price"

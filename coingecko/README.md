@@ -55,7 +55,7 @@ Live cryptocurrency price data integration for Hermes Agent. Fetch Bitcoin, Ethe
 - ✅ Falls back to Kraken API (requires no key, always free)
 
 **Security & Privacy**
-- ✅ API keys stored **only** in `~/.hermes/.env`
+- ✅ API keys stored securely in environment variables
 - ✅ Never appears in Hermes chat, prompts, or logs
 - ✅ Read-only access (can fetch prices, cannot trade or move funds)
 - ✅ Transparent logging (all API calls timestamped, no credential leaks)
@@ -123,10 +123,12 @@ For Hermes users new to Bitcoin:
 3. **Sign up:** Email + password (2 minutes)
 4. **Copy key:** Dashboard will show `CG-...` string
 5. **Add to .env:**
-   ```bash
-   echo "COINGECKO_API_KEY=CG-YOUR_KEY_HERE" >> ~/.hermes/.env
-   chmod 600 ~/.hermes/.env
-   ```
+Set your CoinGecko API key in your Hermes environment:
+```bash
+export COINGECKO_API_KEY="your-key-here"
+chmod 600 ~/.hermes/.env  # Ensure secure permissions
+echo "COINGECKO_API_KEY=your-key-here" >> ~/.hermes/.env
+```
 6. **Test:**
    ```bash
    ~/.hermes/coingecko-env/bin/python3 ~/.hermes/skills/coingecko/scripts/health_check.py

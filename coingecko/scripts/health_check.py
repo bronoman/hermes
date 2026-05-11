@@ -11,15 +11,24 @@ from pathlib import Path
 from datetime import datetime
 
 def get_coingecko_api_key() -> str:
-    """Load CoinGecko API key from ~/.hermes/.env"""
-    env_file = Path.home() / ".hermes" / ".env"
-    if env_file.exists():
-        with open(env_file) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("COINGECKO_API_KEY="):
-                    return line.split("=", 1)[1]
-    return os.getenv("COINGECKO_API_KEY", "")
+    """Load CoinGecko API key from environment variables"""
+    # Try environment variable first
+    api_key = os.getenv("COINGECKO_API_KEY", "")
+    if api_key:
+        return api_key
+    
+    # Fallback: try to load from config file if it exists
+    try:
+        config_path = Path.home() / ".hermes" / ".env"
+        if config_path.exists():
+            with open(config_path) as f:
+                for line in f:
+                    if "COINGECKO_API_KEY" in line:
+                        return line.split("=", 1)[1].strip()
+    except:
+        pass
+    
+    return ""
 
 def health_check() -> dict:
     """
@@ -47,7 +56,7 @@ def health_check() -> dict:
     if not api_key:
         result["key_type"] = "none"
         result["api_status"] = "not_configured"
-        result["note"] = "No API key in ~/.hermes/.env; will use Kraken fallback"
+        result["note"] = "No API key configured; will use Kraken fallback"
     else:
         result["key_type"] = "demo" if api_key.startswith("CG-") else "unknown"
         
