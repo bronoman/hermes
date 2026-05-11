@@ -200,8 +200,8 @@ Returns: BTC price in specified currency
 
 **No External Dependencies**
 - Uses Python stdlib only (urllib, json, argparse, datetime)
-- No pip install needed
-- Works on any Python 3.8+
+- No third-party packages required
+- Works on any Python 3.8+ (included with Python distribution)
 
 ---
 

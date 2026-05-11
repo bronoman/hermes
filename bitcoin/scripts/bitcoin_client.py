@@ -29,11 +29,9 @@ import urllib.error
 from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 
-API_URL = os.environ.get("BITCOIN_API_URL", "https://mempool.space/api")
-COINGECKO_KEY = os.environ.get("COINGECKO_API_KEY", "")
-
 # Constants
 SATOSHI_PER_BTC = 100_000_000
+MEMPOOL_API_DEFAULT = "https://mempool.space/api"
 
 # Supported currencies for price conversion
 SUPPORTED_CURRENCIES = {
@@ -53,6 +51,19 @@ SUPPORTED_CURRENCIES = {
 # ---------------------------------------------------------------------------
 # HTTP / API helpers
 # ---------------------------------------------------------------------------
+
+def _get_mempool_api_url() -> str:
+    """Get Mempool.space API base URL, with optional override from environment."""
+    # Inline: load API URL at point of use, never extract to module-level
+    try:
+        from dotenv import dotenv_values
+        env_data = dotenv_values()
+        api_url = env_data.get("BITCOIN_API_URL", "") or MEMPOOL_API_DEFAULT
+    except Exception:
+        api_url = os.environ.get("BITCOIN_API_URL", MEMPOOL_API_DEFAULT)
+    
+    return api_url
+
 
 def _http_get_json(url: str, timeout: int = 10, retries: int = 2) -> Optional[Any]:
     """GET JSON from a URL with retry on 429 rate-limit. Returns parsed JSON or None."""
@@ -77,9 +88,19 @@ def _get_price_usd(currency: str = "USD") -> Optional[float]:
     """Get current BTC price in specified currency from CoinGecko."""
     currency_lower = currency.lower()
     
+    # Load CoinGecko API key inline at point of use
+    try:
+        from dotenv import dotenv_values
+        env_data = dotenv_values()
+        cg_key = env_data.get("COINGECKO_API_KEY", "") or ""
+    except Exception:
+        cg_key = ""
+    
     url = f"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies={currency_lower}"
-    if COINGECKO_KEY:
-        url += f"&x_cg_pro_api_key={COINGECKO_KEY}"
+    
+    # Inline: use key immediately if available
+    if cg_key:
+        url += f"&x_cg_pro_api_key={cg_key}"
     
     data = _http_get_json(url, timeout=10, retries=1)
     if data and "bitcoin" in data and currency_lower in data["bitcoin"]:
@@ -150,8 +171,9 @@ def cmd_address(address: str, limit: int = 20, currency: str = "USD") -> None:
     print(f"   Type: {_get_address_type(address)}")
     print()
     
-    # Get address data from Mempool
-    url = f"{API_URL}/address/{address}"
+    # Get address data from Mempool (inline: get URL here)
+    api_url = _get_mempool_api_url()
+    url = f"{api_url}/address/{address}"
     data = _http_get_json(url)
     
     if not data:
@@ -185,7 +207,7 @@ def cmd_address(address: str, limit: int = 20, currency: str = "USD") -> None:
     print()
     
     # Get UTXOs
-    url_utxos = f"{API_URL}/address/{address}/utxo"
+    url_utxos = f"{api_url}/address/{address}/utxo"
     utxos = _http_get_json(url_utxos)
     
     if utxos:
@@ -209,8 +231,9 @@ def cmd_tx(txid: str, currency: str = "USD") -> None:
     print(f"\n🔗 Bitcoin Transaction: {txid[:16]}...")
     print()
     
-    # Get tx data
-    url = f"{API_URL}/tx/{txid}"
+    # Get tx data (inline: get URL here)
+    api_url = _get_mempool_api_url()
+    url = f"{api_url}/tx/{txid}"
     tx = _http_get_json(url)
     
     if not tx:
@@ -221,7 +244,7 @@ def cmd_tx(txid: str, currency: str = "USD") -> None:
     price = _get_price_usd(currency)
     
     # Get status
-    url_status = f"{API_URL}/tx/{txid}/status"
+    url_status = f"{api_url}/tx/{txid}/status"
     status = _http_get_json(url_status)
     confirmed = status.get("confirmed", False) if status else False
     block_height = status.get("block_height") if status else None
@@ -282,7 +305,8 @@ def cmd_fees(currency: str = "USD") -> None:
     print(f"\n⛽ Bitcoin Network Fees")
     print()
     
-    url = f"{API_URL}/v1/fees/recommended"
+    api_url = _get_mempool_api_url()
+    url = f"{api_url}/v1/fees/recommended"
     fees = _http_get_json(url)
     
     if not fees:
@@ -321,7 +345,8 @@ def cmd_mempool(currency: str = "USD") -> None:
     print(f"\n💾 Bitcoin Mempool")
     print()
     
-    url = f"{API_URL}/mempool"
+    api_url = _get_mempool_api_url()
+    url = f"{api_url}/mempool"
     mempool = _http_get_json(url)
     
     if not mempool:
@@ -358,7 +383,8 @@ def cmd_blocks(limit: int = 10, currency: str = "USD") -> None:
     print(f"\n📦 Recent Bitcoin Blocks (last {limit})")
     print()
     
-    url = f"{API_URL}/blocks"
+    api_url = _get_mempool_api_url()
+    url = f"{api_url}/blocks"
     blocks = _http_get_json(url)
     
     if not blocks:
@@ -383,16 +409,17 @@ def cmd_stats(currency: str = "USD") -> None:
     print(f"\n🌐 Bitcoin Network Statistics")
     print()
     
-    # Get latest block height
-    url_tip = f"{API_URL}/blocks/tip/height"
+    # Get latest block height (inline: get URL here)
+    api_url = _get_mempool_api_url()
+    url_tip = f"{api_url}/blocks/tip/height"
     tip_height = _http_get_json(url_tip)
     
     # Get mempool stats
-    url_mempool = f"{API_URL}/mempool"
+    url_mempool = f"{api_url}/mempool"
     mempool = _http_get_json(url_mempool)
     
     # Get fee estimates
-    url_fees = f"{API_URL}/v1/fees/recommended"
+    url_fees = f"{api_url}/v1/fees/recommended"
     fees = _http_get_json(url_fees)
     
     # Get price
