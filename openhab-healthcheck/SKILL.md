@@ -22,8 +22,8 @@ Verifies server connectivity, and basic system status:
 
 ```bash
 #!/bin/bash
-BASE_URL="${OPENHAB_BASE_URL:-http://192.168.1.10:8080}"
-USER="${OPENHAB_USERNAME:-oh.Hermes.m3aG9XZppfjiYo4noYlRVISNE6TWPiW0uIOnoxG9fzOiLzYHYJ7fgfQGoOF2OwQphQySY8WOy99oddonBaq52A}"
+BASE_URL="${OPENHAB_BASE_URL:...}"
+USER="${OPENHAB_USERNAME:-...}"
 
 echo "🔍 openHAB Health Check"
 echo "======================"
@@ -75,8 +75,8 @@ import base64
 import sys
 import os
 
-BASE_URL = os.environ.get("OPENHAB_BASE_URL", "http://192.168.1.10:8080")
-USERNAME = os.environ.get("OPENHAB_USERNAME", "oh.Hermes.m3aG9XZppfjiYo4noYlRVISNE6TWPiW0uIOnoxG9fzOiLzYHYJ7fgfQGoOF2OwQphQySY8WOy99oddonBaq52A")
+BASE_URL = os.environ.get("OPENHAB_BASE_URL", "...")
+USERNAME = os.environ.get("OPENHAB_USERNAME", "..,")
 PASSWORD = os.environ.get("OPENHAB_PASSWORD", "")
 
 def get_auth_header():
@@ -214,10 +214,10 @@ if __name__ == "__main__":
 
 ```bash
 #!/bin/bash
-BASE_URL="${OPENHAB_BASE_URL:-http://192.168.1.10:8080}"
-USER="${OPENHAB_USERNAME:-oh.Hermes.m3aG9XZppfjiYo4noYlRVISNE6TWPiW0uIOnoxG9fzOiLzYHYJ7fgfQGoOF2OwQphQySY8WOy99oddonBaq52A}"
+BASE_URL="${OPENHAB_BASE_URL:-...}"
+USER="${OPENHAB_USERNAME:-...}"
 
-THING_UID="${1:-Velux_KLF200}"
+THING_UID="${1:-...}"
 
 echo "🔍 Thing Status Report: $THING_UID"
 echo "====================================="
