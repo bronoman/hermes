@@ -10,9 +10,19 @@ metadata:
     tags: [openHAB, Smart Home, REST API, Home Automation, Monitoring, Health Check, Diagnostics]
     homepage: https://www.openhab.org/docs/
     required_environment_variables:
-      - OPENHAB_BASE_URL
-      - OPENHAB_USERNAME
-      - OPENHAB_PASSWORD
+      - name: OPENHAB_BASE_URL
+        prompt: "Your openhab base URL (http://...:8080)"
+        help: "URL of your smart home server, needed to access the API. For details, please consult your setup notes or the openHAB documentation."
+        required_for: "Access to the API"
+      - name: OPENHAB_USERNAME
+        prompt: "Your openHAB username or API key from your openHAB instance"
+        help: "Go to openHAB to generate an API key and use this here instead of username"
+        required_for: "Access to the API"
+      - name: OPENHAB_PASSWORD
+        prompt: "Your openHAB password"
+        help: "Leave blank if API key is used as username."
+        required_for: "Acess to the API"
+        password: true
     # Optional: nice descriptions for the setup prompt
     config:
       openhab_base_url:

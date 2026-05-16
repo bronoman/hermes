@@ -3,6 +3,7 @@
 import json, urllib.request, base64, sys, os
 from collections import Counter
 
+# HERMES: uses declared required_environment_variables (see SKILL.md)
 base_url = os.environ.get("OPENHAB_BASE_URL")
 username = os.environ.get("OPENHAB_USERNAME")
 password = os.environ.get("OPENHAB_PASSWORD")
