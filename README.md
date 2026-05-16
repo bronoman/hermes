@@ -31,6 +31,14 @@ hermes skills install bronoman/hermes-skills/coingecko
 ```
 hermes skills install bronoman/hermes-skills/nostr
 ```
+
+## openHAB Skill
+[openHAB](https://www.openhab.org) skill - allows HERMES Agent to connect to a local openHAB smart home server, check its status, retrieve information (e.g. heat pump is running) and also switch items available in openHAB )e.g. turn on light).
+#### Installation
+```
+hermes skills install bronoman/hermes-skills/openhab
+```
+
 ## Additional Information
 For details, please see the respective README.md and /references/DESCRIPTION.md files.
 
