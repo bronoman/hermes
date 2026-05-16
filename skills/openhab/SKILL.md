@@ -16,7 +16,7 @@ metadata:
     # Optional: nice descriptions for the setup prompt
     config:
       openhab_base_url:
-        description: "Full base URL of your openHAB instance (e.g. http://192.168.1.50:8080)"
+        description: "Full base URL of your openHAB instance typically running on port 8080"
         required: true
       openhab_username:
         description: "openHAB REST API username"
