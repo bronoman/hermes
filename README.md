@@ -7,6 +7,10 @@ At the moment, the following skills are available here:
 - Coingecko
 - Nostr
 - OpenHAB
+Roadmap:
+- Amazon.de product research & shopping
+- Ebay.de product research & shopping
+- yFinance - under evaluation
 
 ### Bitcoin Skill
 [Bitcoin](https://bitcoin.org) skill - allows HERMES Agent to connect to the free [mempool.space](https://mempool.space/) API and retrieve Bitcoin blockchain data related to:
