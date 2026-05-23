@@ -7,6 +7,7 @@ At the moment, the following skills are available here:
 - Coingecko
 - Nostr
 - OpenHAB
+
 Roadmap:
 - Amazon.de product research & shopping
 - Ebay.de product research & shopping
