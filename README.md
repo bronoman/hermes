@@ -59,7 +59,7 @@ hermes skills install bronoman/hermes/openhab
 
 **Quick Start:**
 ```bash
-hermes openhab --host 192.168.1.8:8080 --action status
+hermes openhab --host 192.168.255.255:8080 --action status
 hermes openhab --item "LivingRoom_Light" --command ON
 ```
 
