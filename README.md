@@ -59,7 +59,7 @@ hermes skills install bronoman/hermes/openhab
 
 **Quick Start:**
 ```bash
-hermes openhab --host 192.168.1.8:8080 --action status
+hermes openhab --host 192.168.255.255:8080 --action status
 hermes openhab --item "LivingRoom_Light" --command ON
 ```
 
@@ -226,7 +226,7 @@ FTP_PASS=password
 # (No auth required — uses free public APIs)
 
 # openHAB
-OPENHAB_HOST=192.168.255.2558:8080
+OPENHAB_HOST=192.168.255.255:8080
 OPENHAB_USERNAME=username
 OPENHAB_PASSWORD=password
 
