@@ -226,8 +226,8 @@ FTP_PASS=password
 # (No auth required — uses free public APIs)
 
 # openHAB
-OPENHAB_HOST=192.168.1.8:8080
-OPENHAB_USERNAME=admin
+OPENHAB_HOST=192.168.255.2558:8080
+OPENHAB_USERNAME=username
 OPENHAB_PASSWORD=password
 
 # Nostr
